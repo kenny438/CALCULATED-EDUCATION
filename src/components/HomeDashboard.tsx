@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Zap, Star, Flame, Trophy, Target, PlayCircle, Plus, BookOpen, Sparkles } from "lucide-react";
+import { Zap, Star, Flame, Trophy, Target, PlayCircle, Plus, BookOpen, Sparkles, BadgeCheck } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Course, Enrollment, UserProfile } from "../data/mockData";
 import { CourseCard } from "./CourseCard";
@@ -25,6 +25,7 @@ const FUN_QUOTES = [
 ];
 
 export function HomeDashboard({ courses, enrollments, userProfile, onSelectCourse, onCreateCourse, onExploreCourses }: HomeDashboardProps) {
+  const isCoFounder = ["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(userProfile.email || "");
   const [quote, setQuote] = useState(FUN_QUOTES[0]);
   const [isHoveringStreak, setIsHoveringStreak] = useState(false);
   const [isHoveringXP, setIsHoveringXP] = useState(false);
@@ -180,9 +181,15 @@ export function HomeDashboard({ courses, enrollments, userProfile, onSelectCours
           <Star className="absolute bottom-8 left-1/3 w-8 h-8 text-pink-300 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity" />
         </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col items-start">
           <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2 flex items-center gap-3">
             Welcome back, {userProfile.username}! 
+            {isCoFounder && (
+              <span className="flex items-center gap-1 text-sm bg-blue-500/30 text-blue-100 px-3 py-1 rounded-full font-bold border border-blue-400/50">
+                <BadgeCheck className="w-4 h-4 text-blue-300" />
+                Co-founder
+              </span>
+            )}
             <motion.span 
               animate={{ rotate: [0, 20, -20, 20, 0] }} 
               transition={{ duration: 1, delay: 1, repeatDelay: 5, repeat: Infinity }}

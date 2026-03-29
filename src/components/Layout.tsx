@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Bell, Menu, ChevronDown, X, LogOut, BookOpen, Users, GraduationCap } from "lucide-react";
+import { Search, Bell, Menu, ChevronDown, X, LogOut, BookOpen, Users, GraduationCap, BadgeCheck } from "lucide-react";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "./ui/Toast";
@@ -80,8 +80,13 @@ export function Layout({
               onClick={() => setActiveTab("profile")}
               className="hidden sm:flex items-center gap-2 px-4 py-2 border-2 border-slate-200 bg-white rounded-2xl text-sm font-black hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm transform hover:-translate-y-0.5"
             >
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.avatarSeed || 'default'}`} alt="Avatar" className="w-6 h-6 rounded-full bg-slate-100" />
-              <span>{userProfile?.username || 'Profile'}</span>
+              <img src={userProfile?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.avatarSeed || 'default'}`} alt="Avatar" className="w-6 h-6 rounded-full bg-slate-100 object-cover" />
+              <span className="flex items-center gap-1">
+                {userProfile?.username || 'Profile'}
+                {userProfile && ["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(userProfile.email || "") && (
+                  <BadgeCheck className="w-4 h-4 text-blue-500" title="Co-founder" />
+                )}
+              </span>
             </button>
 
             <button 

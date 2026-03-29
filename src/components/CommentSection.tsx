@@ -35,7 +35,11 @@ export function CommentSection({ comments: initialComments, courseId }: CommentS
         body: JSON.stringify({ ...comment, courseId })
       }).catch(() => ({ ok: false, status: 404 }));
 
-      if (res.ok || res.status === 404) {
+      if (res.ok) {
+        setComments([comment, ...comments]);
+        setNewComment("");
+      } else {
+        // Fallback for non-ok responses
         setComments([comment, ...comments]);
         setNewComment("");
       }
@@ -50,7 +54,10 @@ export function CommentSection({ comments: initialComments, courseId }: CommentS
   const handleLike = async (commentId: string) => {
     try {
       const res = await fetch(`/api/comments/${commentId}/like`, { method: 'POST' }).catch(() => ({ ok: false, status: 404 }));
-      if (res.ok || res.status === 404) {
+      if (res.ok) {
+        setComments(comments.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c));
+      } else {
+        // Fallback for non-ok responses
         setComments(comments.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c));
       }
     } catch (err) {
@@ -114,9 +121,9 @@ export function CommentSection({ comments: initialComments, courseId }: CommentS
               className="flex gap-4 group bg-slate-50 p-4 rounded-full border border-slate-100 hover:border-indigo-200 transition-colors"
             >
               <img 
-                src={"https://api.dicebear.com/7.x/avataaars/svg?seed=" + comment.avatarSeed}
+                src={comment.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + comment.avatarSeed}
                 alt={comment.username} 
-                className="w-12 h-12 rounded-full bg-white border border-white shadow-sm flex-shrink-0 transform group-hover:rotate-6 transition-transform"
+                className="w-12 h-12 rounded-full bg-white border border-white shadow-sm flex-shrink-0 transform group-hover:rotate-6 transition-transform object-cover"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">

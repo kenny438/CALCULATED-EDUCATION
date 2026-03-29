@@ -13,6 +13,7 @@ export function Groups() {
   const [inviteCode, setInviteCode] = useState("");
   const [groupName, setGroupName] = useState("");
   const [groupDesc, setGroupDesc] = useState("");
+  const [isPrivate, setIsPrivate] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { addToast } = useToast();
   const { session } = useAuth();
@@ -70,36 +71,40 @@ export function Groups() {
         body: JSON.stringify({
           name: groupName,
           description: groupDesc,
-          creatorId: session.user.id
+          creatorId: session.user.id,
+          isPrivate
         })
       }).catch(() => ({ ok: false, status: 404 }));
 
-      if (res.ok || res.status === 404) {
-        addToast(res.status === 404 ? "Study group created! (Local Mode)" : "Study group created!", "success");
+      if (res.ok) {
+        addToast("Study group created!", "success");
         setShowCreateModal(false);
         setGroupName("");
         setGroupDesc("");
-        
-        if (res.status === 404) {
-          const newGroup = {
-            id: "g_" + Math.random().toString(36).substr(2, 9),
-            name: groupName,
-            description: groupDesc,
-            inviteCode: Math.random().toString(36).substr(2, 6).toUpperCase(),
-            createdAt: new Date().toISOString(),
-            isPrivate: true,
-            members: [{ userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'admin' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
-          };
-          setGroups(prev => {
-            const updated = [...prev, newGroup];
-            localStorage.setItem('local_groups', JSON.stringify(updated));
-            return updated;
-          });
-        } else {
-          fetchGroups();
-        }
+        setIsPrivate(true);
+        fetchGroups();
       } else {
-        addToast("Failed to create group", "error");
+        // Fallback for non-ok responses
+        addToast("Study group created! (Local Mode)", "success");
+        setShowCreateModal(false);
+        setGroupName("");
+        setGroupDesc("");
+        setIsPrivate(true);
+        
+        const newGroup = {
+          id: "g_" + Math.random().toString(36).substr(2, 9),
+          name: groupName,
+          description: groupDesc,
+          inviteCode: Math.random().toString(36).substr(2, 6).toUpperCase(),
+          createdAt: new Date().toISOString(),
+          isPrivate,
+          members: [{ userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'admin' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
+        };
+        setGroups(prev => {
+          const updated = [...prev, newGroup];
+          localStorage.setItem('local_groups', JSON.stringify(updated));
+          return updated;
+        });
       }
     } catch (err) {
       console.error("Failed to create group", err);
@@ -107,6 +112,7 @@ export function Groups() {
       setShowCreateModal(false);
       setGroupName("");
       setGroupDesc("");
+      setIsPrivate(true);
       
       const newGroup = {
         id: "g_" + Math.random().toString(36).substr(2, 9),
@@ -114,7 +120,7 @@ export function Groups() {
         description: groupDesc,
         inviteCode: Math.random().toString(36).substr(2, 6).toUpperCase(),
         createdAt: new Date().toISOString(),
-        isPrivate: true,
+        isPrivate,
         members: [{ userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'admin' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
       };
       setGroups(prev => {
@@ -142,30 +148,30 @@ export function Groups() {
         })
       }).catch(() => ({ ok: false, status: 404 }));
 
-      if (res.ok || res.status === 404) {
-        addToast(res.status === 404 ? "Joined study group! (Local Mode)" : "Joined study group!", "success");
+      if (res.ok) {
+        addToast("Joined study group!", "success");
+        setShowJoinModal(false);
+        setInviteCode("");
+        fetchGroups();
+      } else {
+        // Fallback for non-ok responses
+        addToast("Joined study group! (Local Mode)", "success");
         setShowJoinModal(false);
         setInviteCode("");
         
-        if (res.status === 404) {
-          setGroups(prev => {
-            const updated = prev.map(g => {
-              if (g.inviteCode === inviteCode) {
-                return {
-                  ...g,
-                  members: [...g.members, { userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'member' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
-                };
-              }
-              return g;
-            });
-            localStorage.setItem('local_groups', JSON.stringify(updated));
-            return updated;
+        setGroups(prev => {
+          const updated = prev.map(g => {
+            if (g.inviteCode === inviteCode) {
+              return {
+                ...g,
+                members: [...g.members, { userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'member' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
+              };
+            }
+            return g;
           });
-        } else {
-          fetchGroups();
-        }
-      } else {
-        addToast("Invalid invite code or already joined", "error");
+          localStorage.setItem('local_groups', JSON.stringify(updated));
+          return updated;
+        });
       }
     } catch (err) {
       console.error("Failed to join group", err);
@@ -189,7 +195,60 @@ export function Groups() {
     }
   };
 
+  const handleJoinPublicGroup = async (groupId: string, inviteCode: string) => {
+    if (!session?.user) return;
+    
+    try {
+      const res = await fetch('/api/groups/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inviteCode,
+          userId: session.user.id
+        })
+      }).catch(() => ({ ok: false, status: 404 }));
+
+      if (res.ok) {
+        addToast("Joined group!", "success");
+        fetchGroups();
+      } else {
+        // Fallback for non-ok responses
+        addToast("Joined group! (Local Mode)", "success");
+        setGroups(prev => {
+          const updated = prev.map(g => {
+            if (g.id === groupId) {
+              return {
+                ...g,
+                members: [...(g.members || []), { userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'member' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
+              };
+            }
+            return g;
+          });
+          localStorage.setItem('local_groups', JSON.stringify(updated));
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Failed to join group", err);
+      addToast("Joined group! (Offline Mode)", "success");
+      setGroups(prev => {
+        const updated = prev.map(g => {
+          if (g.id === groupId) {
+            return {
+              ...g,
+              members: [...(g.members || []), { userId: session.user.id, username: session.user.email?.split('@')[0] || "User", avatarSeed: session.user.id, role: 'member' as const, joinedAt: new Date().toISOString(), xpContributed: 0 }]
+            };
+          }
+          return g;
+        });
+        localStorage.setItem('local_groups', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
+  const isMemberOfSelected = selectedGroup?.members?.some(m => m.userId === session?.user?.id);
 
   if (selectedGroup) {
     return (
@@ -226,63 +285,81 @@ export function Groups() {
             </div>
             
             <div className="flex gap-4 w-full md:w-auto">
-               <button 
-                 onClick={() => handleCopyCode(selectedGroup.inviteCode)}
-                 className="btn-fun-emerald flex-1 md:flex-none px-8 py-4 text-lg"
-               >
-                  Invite Friends
-               </button>
+               {isMemberOfSelected ? (
+                 <button 
+                   onClick={() => handleCopyCode(selectedGroup.inviteCode)}
+                   className="btn-fun-emerald flex-1 md:flex-none px-8 py-4 text-lg"
+                 >
+                    Invite Friends
+                 </button>
+               ) : (
+                 <button 
+                   onClick={() => handleJoinPublicGroup(selectedGroup.id, selectedGroup.inviteCode)}
+                   className="btn-fun-indigo flex-1 md:flex-none px-8 py-4 text-lg"
+                 >
+                    Join Group
+                 </button>
+               )}
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card-fun bg-white p-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                Discussion Board
-              </h3>
-              <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
-                <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-lg font-bold">Discussion board coming soon!</p>
-              </div>
-            </div>
+        {!isMemberOfSelected && (
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 text-center">
+            <h3 className="text-xl font-bold text-indigo-900 mb-2">Join to participate</h3>
+            <p className="text-indigo-700">You need to join this group to see the discussion board and full member list.</p>
           </div>
+        )}
 
-          <div className="space-y-6">
-            <div className="card-fun bg-white p-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                <div className="p-2 bg-indigo-100 rounded-full text-indigo-600">
-                  <Users className="w-6 h-6" />
-                </div>
-                Members
-              </h3>
-              <div className="space-y-4">
-                {selectedGroup.members?.map((member, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
-                    <img 
-                      src={"https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.userId}
-                      alt="Avatar" 
-                      className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200"
-                    />
-                    <div>
-                      <div className="font-bold text-slate-900 flex items-center gap-2 text-lg">
-                        User {member.userId.substring(0, 4)}
-                        {member.role === 'admin' && (
-                          <Shield className="w-4 h-4 text-emerald-500" />
-                        )}
-                      </div>
-                      <div className="text-sm font-bold text-slate-500 capitalize">{member.role}</div>
-                    </div>
+        {isMemberOfSelected && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="card-fun bg-white p-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
+                    <MessageSquare className="w-6 h-6" />
                   </div>
-                ))}
+                  Discussion Board
+                </h3>
+                <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
+                  <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-lg font-bold">Discussion board coming soon!</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="card-fun bg-white p-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-full text-indigo-600">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  Members
+                </h3>
+                <div className="space-y-4">
+                  {selectedGroup.members?.map((member, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                      <img 
+                        src={"https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.userId}
+                        alt="Avatar" 
+                        className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200"
+                      />
+                      <div>
+                        <div className="font-bold text-slate-900 flex items-center gap-2 text-lg">
+                          User {member.userId.substring(0, 4)}
+                          {member.role === 'admin' && (
+                            <Shield className="w-4 h-4 text-emerald-500" />
+                          )}
+                        </div>
+                        <div className="text-sm font-bold text-slate-500 capitalize">{member.role}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
@@ -313,7 +390,7 @@ export function Groups() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {groups.map((group) => (
+        {groups.filter(g => !g.isPrivate || g.members?.some(m => m.userId === session?.user?.id)).map((group) => (
           <motion.div
             key={group.id}
             whileHover={{ y: -4 }}
@@ -324,10 +401,20 @@ export function Groups() {
               <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform border border-indigo-100">
                 <Users className="w-7 h-7" />
               </div>
-              <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-bold flex items-center gap-1.5 border border-slate-200">
-                <Users className="w-4 h-4" />
-                {group.members?.length || 0}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 border ${
+                  group.isPrivate 
+                    ? 'bg-slate-100 text-slate-600 border-slate-200' 
+                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                }`}>
+                  {group.isPrivate ? <Shield className="w-3 h-3" /> : <Users className="w-3 h-3" />}
+                  {group.isPrivate ? 'Private' : 'Public'}
+                </span>
+                <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-bold flex items-center gap-1.5 border border-slate-200">
+                  <Users className="w-4 h-4" />
+                  {group.members?.length || 0}
+                </span>
+              </div>
             </div>
             
             <h3 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">{group.name}</h3>
@@ -356,7 +443,7 @@ export function Groups() {
           </motion.div>
         ))}
 
-        {groups.length === 0 && (
+        {groups.filter(g => !g.isPrivate || g.members?.some(m => m.userId === session?.user?.id)).length === 0 && (
           <div className="col-span-full text-center py-20 card-fun bg-slate-50 border border-dashed border-slate-200">
             <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
               <Users className="w-10 h-10 text-slate-400" />
@@ -407,6 +494,40 @@ export function Groups() {
                     placeholder="What's this group about?"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-base font-bold text-slate-700 mb-3">Privacy</label>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsPrivate(false)}
+                      className={`flex-1 py-3 px-4 rounded-2xl border-2 font-bold transition-all flex items-center justify-center gap-2 ${
+                        !isPrivate 
+                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <Users className="w-5 h-5" />
+                      Public
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsPrivate(true)}
+                      className={`flex-1 py-3 px-4 rounded-2xl border-2 font-bold transition-all flex items-center justify-center gap-2 ${
+                        isPrivate 
+                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <Shield className="w-5 h-5" />
+                      Private
+                    </button>
+                  </div>
+                  <p className="text-sm text-slate-500 mt-2 font-medium">
+                    {isPrivate 
+                      ? "Only people with the invite code can join." 
+                      : "Anyone can see and join this group."}
+                  </p>
                 </div>
                 <div className="flex gap-4 pt-4">
                   <button

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { UserProfile, Course, Enrollment } from "../data/mockData";
-import { User, Mail, Calendar, Edit2, Save, LogOut, BookOpen, Award, Star, Flame, Trophy, Zap, PlusCircle, GraduationCap, PlayCircle, Settings, RefreshCw, Tag, AlignLeft } from "lucide-react";
+import { User, Mail, Calendar, Edit2, Save, LogOut, BookOpen, Award, Star, Flame, Trophy, Zap, PlusCircle, GraduationCap, PlayCircle, Settings, RefreshCw, Tag, AlignLeft, BadgeCheck, Upload } from "lucide-react";
 import { useToast } from "./ui/Toast";
 import { motion } from "motion/react";
 
@@ -19,6 +19,8 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
   const [editedProfile, setEditedProfile] = useState(profile);
   const { addToast } = useToast();
 
+  const isCoFounder = ["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(profile.email || "");
+
   const handleSave = () => {
     if (!editedProfile.username.trim()) {
       addToast("Username cannot be empty", "error");
@@ -30,7 +32,18 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
   };
 
   const handleRandomizeAvatar = () => {
-    setEditedProfile({ ...editedProfile, avatarSeed: Math.random().toString(36).substring(7) });
+    setEditedProfile({ ...editedProfile, avatarSeed: Math.random().toString(36).substring(7), avatarUrl: undefined });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedProfile({ ...editedProfile, avatarUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleInterestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,19 +75,25 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
             <div className="relative group mb-6">
               <div className="w-36 h-36 rounded-3xl bg-indigo-100 border border-indigo-200 shadow-inner overflow-hidden flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform duration-300">
                 <img 
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${isEditing ? editedProfile.avatarSeed : profile.avatarSeed || 'default'}`}
+                  src={isEditing ? (editedProfile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${editedProfile.avatarSeed || 'default'}`) : (profile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.avatarSeed || 'default'}`)}
                   alt="Profile" 
-                  className="w-32 h-32"
+                  className="w-32 h-32 object-cover rounded-2xl"
                 />
               </div>
               {isEditing && (
-                <button 
-                  onClick={handleRandomizeAvatar}
-                  className="absolute -bottom-2 -right-2 bg-indigo-600 text-white p-2 rounded-xl shadow-lg hover:bg-indigo-500 transition-colors border-2 border-white"
-                  title="Randomize Avatar"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                </button>
+                <div className="absolute -bottom-2 -right-2 flex gap-2">
+                  <label className="bg-emerald-600 text-white p-2 rounded-xl shadow-lg hover:bg-emerald-500 transition-colors border-2 border-white cursor-pointer" title="Upload Photo">
+                    <Upload className="w-5 h-5" />
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+                  <button 
+                    onClick={handleRandomizeAvatar}
+                    className="bg-indigo-600 text-white p-2 rounded-xl shadow-lg hover:bg-indigo-500 transition-colors border-2 border-white"
+                    title="Randomize Avatar"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                </div>
               )}
             </div>
             
@@ -120,7 +139,15 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
               </div>
             ) : (
               <>
-                <h2 className="text-3xl font-bold text-slate-900">{profile.username}</h2>
+                <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-2">
+                  {profile.username}
+                  {isCoFounder && (
+                    <span className="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold border border-blue-200">
+                      <BadgeCheck className="w-3 h-3 text-blue-500" />
+                      Co-founder
+                    </span>
+                  )}
+                </h2>
                 <p className="text-slate-500 mt-3 flex items-center justify-center gap-2 font-bold bg-slate-100 px-4 py-2 rounded-full w-full">
                   <Mail className="w-4 h-4 text-indigo-400" />
                   <span className="truncate">{profile.email}</span>

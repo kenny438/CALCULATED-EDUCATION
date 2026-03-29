@@ -5,6 +5,7 @@ export interface Comment {
   userId: string;
   username: string;
   avatarSeed: string;
+  avatarUrl?: string;
   text: string;
   timestamp: string;
   likes: number;
@@ -43,8 +44,10 @@ export interface Course {
     id: string;
     name: string;
     avatarSeed: string;
+    avatarUrl?: string;
     bio: string;
     qualifications?: string;
+    email?: string;
   };
   price: number;
   students: number;
@@ -74,6 +77,7 @@ export interface UserProfile {
   email: string;
   bio: string;
   avatarSeed: string;
+  avatarUrl?: string;
   joinedDate: string;
   isAdmin?: boolean;
   isVerified?: boolean;
@@ -94,6 +98,7 @@ export interface GroupMember {
   userId: string;
   username: string;
   avatarSeed: string;
+  avatarUrl?: string;
   role: "admin" | "member";
   joinedAt: string;
   xpContributed: number;
@@ -123,7 +128,8 @@ export const MOCK_COURSES: Course[] = [
       id: "inst1",
       name: "Sarah Drasner",
       avatarSeed: "sarah",
-      bio: "Senior Frontend Engineer and Educator"
+      bio: "Senior Frontend Engineer and Educator",
+      email: "mgethmikadinujakumarathunga@gmail.com"
     },
     price: 49.99,
     students: 12450,

@@ -2,7 +2,7 @@ import React from "react";
 import { Course } from "../data/mockData";
 import { cn, formatCurrency } from "../lib/utils";
 import { motion } from "motion/react";
-import { Star, Users, Clock, PlayCircle, BookOpen } from "lucide-react";
+import { Star, Users, Clock, PlayCircle, BookOpen, BadgeCheck } from "lucide-react";
 
 interface CourseCardProps {
   course: Course;
@@ -111,12 +111,17 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onClick, isWatch
             className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 overflow-hidden shadow-sm"
           >
             <img 
-              src={"https://api.dicebear.com/7.x/avataaars/svg?seed=" + course.instructor.avatarSeed} 
+              src={course.instructor.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + course.instructor.avatarSeed} 
               alt={course.instructor.name}
               className="w-full h-full object-cover"
             />
           </motion.div>
-          <span className="text-sm font-bold text-slate-700 group-hover/instructor:text-indigo-600 transition-colors">{course.instructor.name}</span>
+          <span className="text-sm font-bold text-slate-700 group-hover/instructor:text-indigo-600 transition-colors flex items-center gap-1">
+            {course.instructor.name}
+            {["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(course.instructor.email || "") && (
+              <BadgeCheck className="w-4 h-4 text-blue-500" title="Co-founder" />
+            )}
+          </span>
         </div>
 
         {/* Stats Footer */}

@@ -399,9 +399,15 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
                                     className="relative cursor-pointer rounded-md font-bold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                                   >
                                     <span>Upload a file</span>
-                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={(e) => {
-                                      // Simulate upload by setting a random picsum image
-                                      setCourseData({ ...courseData, image: `https://picsum.photos/seed/${Math.random()}/800/400` });
+                                    <input id="file-upload" name="file-upload" type="file" accept="image/*" className="sr-only" onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                          setCourseData({ ...courseData, image: reader.result as string });
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
                                     }} />
                                   </label>
                                   <p className="pl-1 font-medium">or drag and drop</p>

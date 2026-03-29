@@ -59,6 +59,7 @@ export default function App() {
               email: user.email || session.user.email || "",
               bio: user.bio || DEFAULT_PROFILE.bio,
               avatarSeed: user.avatar_seed || DEFAULT_PROFILE.avatarSeed,
+              avatarUrl: user.avatar_url,
               joinedDate: user.joined_date || DEFAULT_PROFILE.joinedDate,
               isAdmin: user.is_admin === 1 || user.is_admin === '1' || user.is_admin === true,
               onboardingCompleted: user.onboarding_completed === 1 || user.onboarding_completed === '1' || user.onboarding_completed === true,
@@ -152,10 +153,23 @@ export default function App() {
             setIsInitialSyncDone(true);
           } else {
             console.error("Unexpected status code:", res.status);
-            setUserProfile({
-              ...DEFAULT_PROFILE,
-              email: session.user.email || ""
-            });
+            
+            const backupStr = localStorage.getItem(`calculated_profile_${session.user.id}`);
+            if (backupStr) {
+              try {
+                setUserProfile(JSON.parse(backupStr));
+              } catch (e) {
+                setUserProfile({
+                  ...DEFAULT_PROFILE,
+                  email: session.user.email || ""
+                });
+              }
+            } else {
+              setUserProfile({
+                ...DEFAULT_PROFILE,
+                email: session.user.email || ""
+              });
+            }
             
             const localEnrollmentsStr = localStorage.getItem(`local_enrollments_${session.user.id}`);
             if (localEnrollmentsStr) {
@@ -172,6 +186,23 @@ export default function App() {
           }
         } catch (err) {
           console.error("Failed to sync user data:", err);
+          
+          const backupStr = localStorage.getItem(`calculated_profile_${session.user.id}`);
+          if (backupStr) {
+            try {
+              setUserProfile(JSON.parse(backupStr));
+            } catch (e) {
+              setUserProfile({
+                ...DEFAULT_PROFILE,
+                email: session.user.email || ""
+              });
+            }
+          } else {
+            setUserProfile({
+              ...DEFAULT_PROFILE,
+              email: session.user.email || ""
+            });
+          }
           
           const localEnrollmentsStr = localStorage.getItem(`local_enrollments_${session.user.id}`);
           if (localEnrollmentsStr) {
@@ -315,7 +346,7 @@ export default function App() {
         })
       }).catch(() => ({ ok: false, status: 404 }));
 
-      if (res.ok || res.status === 404) {
+      if (res.ok) {
         setEnrollments(prev => {
           const newEnrollments = [...prev, { courseId, progress: 0, enrolledAt: new Date().toISOString(), lastAccessed: new Date().toISOString() }];
           localStorage.setItem(`local_enrollments_${session.user.id}`, JSON.stringify(newEnrollments));
@@ -328,15 +359,32 @@ export default function App() {
         });
         
         const courseTitle = courses.find(c => c.id === courseId)?.title || 'Course';
-        addToast(res.status === 404 ? `Successfully enrolled in ${courseTitle} (Local Mode)` : `Successfully enrolled in ${courseTitle}`, "success");
+        addToast(`Successfully enrolled in ${courseTitle}`, "success");
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 }
         });
       } else {
-        const data = await res.json().catch(() => ({ error: "Failed to parse error" }));
-        addToast(data.error || "Failed to enroll", "error");
+        // Fallback for non-ok responses
+        setEnrollments(prev => {
+          const newEnrollments = [...prev, { courseId, progress: 0, enrolledAt: new Date().toISOString(), lastAccessed: new Date().toISOString() }];
+          localStorage.setItem(`local_enrollments_${session.user.id}`, JSON.stringify(newEnrollments));
+          return newEnrollments;
+        });
+        setCourses(prev => {
+          const newCourses = prev.map(c => c.id === courseId ? { ...c, students: c.students + 1 } : c);
+          localStorage.setItem('local_courses', JSON.stringify(newCourses));
+          return newCourses;
+        });
+        
+        const courseTitle = courses.find(c => c.id === courseId)?.title || 'Course';
+        addToast(`Successfully enrolled in ${courseTitle} (Local Mode)`, "success");
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
       }
     } catch (err) {
       setEnrollments(prev => {
@@ -368,7 +416,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: session.user.id, courseId })
       }).catch(() => ({ ok: false, status: 404 }));
-      if (res.ok || res.status === 404) {
+      if (res.ok) {
         setEnrollments(prev => {
           const newEnrollments = prev.filter(e => e.courseId !== courseId);
           localStorage.setItem(`local_enrollments_${session.user.id}`, JSON.stringify(newEnrollments));
@@ -379,7 +427,20 @@ export default function App() {
           localStorage.setItem('local_courses', JSON.stringify(newCourses));
           return newCourses;
         });
-        addToast(res.status === 404 ? "Unenrolled from course (Local Mode)" : "Unenrolled from course", "success");
+        addToast("Unenrolled from course", "success");
+      } else {
+        // Fallback for non-ok responses
+        setEnrollments(prev => {
+          const newEnrollments = prev.filter(e => e.courseId !== courseId);
+          localStorage.setItem(`local_enrollments_${session.user.id}`, JSON.stringify(newEnrollments));
+          return newEnrollments;
+        });
+        setCourses(prev => {
+          const newCourses = prev.map(c => c.id === courseId ? { ...c, students: Math.max(0, c.students - 1) } : c);
+          localStorage.setItem('local_courses', JSON.stringify(newCourses));
+          return newCourses;
+        });
+        addToast("Unenrolled from course (Local Mode)", "success");
       }
     } catch (err) {
       setEnrollments(prev => {
@@ -414,7 +475,7 @@ export default function App() {
         method: 'DELETE'
       }).catch(() => ({ ok: false, status: 404 }));
       
-      if (res.ok || res.status === 404) {
+      if (res.ok) {
         setCourses(prev => {
           const newCourses = prev.filter(c => c.id !== courseId);
           localStorage.setItem('local_courses', JSON.stringify(newCourses));
@@ -422,13 +483,29 @@ export default function App() {
         });
         setEnrollments(prev => {
           const newEnrollments = prev.filter(e => e.courseId !== courseId);
-          localStorage.setItem(`local_enrollments_${session.user.id}`, JSON.stringify(newEnrollments));
+          localStorage.setItem(`local_enrollments_${session?.user?.id}`, JSON.stringify(newEnrollments));
           return newEnrollments;
         });
         setIsCourseCreatorOpen(false);
         setEditingCourse(null);
         setSelectedCourseId(prev => prev === courseId ? null : prev);
         addToast("Course deleted successfully", "success");
+      } else {
+        // Fallback
+        setCourses(prev => {
+          const newCourses = prev.filter(c => c.id !== courseId);
+          localStorage.setItem('local_courses', JSON.stringify(newCourses));
+          return newCourses;
+        });
+        setEnrollments(prev => {
+          const newEnrollments = prev.filter(e => e.courseId !== courseId);
+          localStorage.setItem(`local_enrollments_${session?.user?.id}`, JSON.stringify(newEnrollments));
+          return newEnrollments;
+        });
+        setIsCourseCreatorOpen(false);
+        setEditingCourse(null);
+        setSelectedCourseId(prev => prev === courseId ? null : prev);
+        addToast("Course deleted locally", "success");
       }
     } catch (err) {
       console.error("Failed to delete course:", err);
@@ -461,8 +538,10 @@ export default function App() {
         id: session.user.id,
         name: userProfile.username,
         avatarSeed: userProfile.avatarSeed,
+        avatarUrl: userProfile.avatarUrl,
         bio: userProfile.bio,
-        qualifications: userProfile.qualifications
+        qualifications: userProfile.qualifications,
+        email: userProfile.email
       },
       students: newCourse.students || 0,
       rating: newCourse.rating || 0,
@@ -500,8 +579,8 @@ export default function App() {
             colors: ['#10b981', '#3b82f6', '#f59e0b']
           });
         }
-      } else if (res.status === 404) {
-        // Fallback for static deployments (e.g., Vercel)
+      } else {
+        // Fallback for static deployments (e.g., Vercel) or server errors
         setCourses(prev => {
           const newCourses = isUpdate ? prev.map(c => c.id === course.id ? course : c) : [course, ...prev];
           localStorage.setItem('local_courses', JSON.stringify(newCourses));
@@ -523,9 +602,6 @@ export default function App() {
             colors: ['#10b981', '#3b82f6', '#f59e0b']
           });
         }
-      } else {
-        const err = await res.json().catch(() => ({ error: "Failed to parse error" }));
-        addToast(err.error || "Failed to save course", "error");
       }
     } catch (err) {
       console.error("Failed to save course:", err);

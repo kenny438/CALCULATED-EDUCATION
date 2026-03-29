@@ -17,6 +17,7 @@ db.exec(`
     email TEXT UNIQUE,
     bio TEXT,
     avatar_seed TEXT,
+    avatar_url TEXT,
     onboarding_completed INTEGER DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
     joined_date TEXT,
@@ -149,6 +150,12 @@ try {
 }
 
 try {
+  db.exec(`ALTER TABLE users ADD COLUMN avatar_url TEXT;`);
+} catch (e) {
+  // Column might already exist
+}
+
+try {
   db.exec(`ALTER TABLE users ADD COLUMN interests TEXT;`);
 } catch (e) {
   // Column might already exist
@@ -224,7 +231,7 @@ async function startServer() {
   });
 
   app.post("/api/user/sync", (req, res) => {
-    const { id, username, email, bio, avatarSeed, onboardingCompleted, isAdmin, joinedDate, qualifications, interests, age, isAdult, canCreateCourses } = req.body;
+    const { id, username, email, bio, avatarSeed, avatarUrl, onboardingCompleted, isAdmin, joinedDate, qualifications, interests, age, isAdult, canCreateCourses } = req.body;
     
     // Streak logic
     const existingUser = db.prepare("SELECT last_login, daily_streak FROM users WHERE id = ?").get(id) as any;
@@ -252,13 +259,14 @@ async function startServer() {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO users (id, username, email, bio, avatar_seed, onboarding_completed, is_admin, joined_date, qualifications, interests, daily_streak, last_login, age, is_adult, can_create_courses)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, username, email, bio, avatar_seed, avatar_url, onboarding_completed, is_admin, joined_date, qualifications, interests, daily_streak, last_login, age, is_adult, can_create_courses)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         username = excluded.username,
         email = excluded.email,
         bio = excluded.bio,
         avatar_seed = excluded.avatar_seed,
+        avatar_url = excluded.avatar_url,
         onboarding_completed = excluded.onboarding_completed,
         is_admin = excluded.is_admin,
         qualifications = excluded.qualifications,
@@ -276,6 +284,7 @@ async function startServer() {
       email || null, 
       bio || null, 
       avatarSeed || null, 
+      avatarUrl || null,
       onboardingCompleted ? 1 : 0, 
       isAdmin ? 1 : 0, 
       joinedDate || null, 
@@ -299,7 +308,7 @@ async function startServer() {
   });
 
   app.get("/api/leaderboard", (req, res) => {
-    const users = db.prepare("SELECT id, username, xp, avatar_seed FROM users ORDER BY xp DESC LIMIT 10").all();
+    const users = db.prepare("SELECT id, username, xp, avatar_seed, avatar_url FROM users ORDER BY xp DESC LIMIT 10").all();
     res.json(users);
   });
 
@@ -307,7 +316,7 @@ async function startServer() {
   app.get("/api/courses", (req, res) => {
     const courses = db.prepare("SELECT * FROM courses").all();
     const result = courses.map((c: any) => {
-      const instructor = db.prepare("SELECT id, username as name, avatar_seed as avatarSeed, bio, qualifications FROM users WHERE id = ?").get(c.instructor_id);
+      const instructor = db.prepare("SELECT id, username as name, avatar_seed as avatarSeed, avatar_url as avatarUrl, bio, qualifications FROM users WHERE id = ?").get(c.instructor_id);
       const rawLessons = db.prepare("SELECT * FROM lessons WHERE course_id = ?").all(c.id);
       const lessons = rawLessons.map((l: any) => ({
         ...l,
@@ -317,7 +326,7 @@ async function startServer() {
         resources: l.resources ? JSON.parse(l.resources) : []
       }));
       const comments = db.prepare(`
-        SELECT c.*, u.username, u.avatar_seed as avatarSeed 
+        SELECT c.*, u.username, u.avatar_seed as avatarSeed, u.avatar_url as avatarUrl
         FROM comments c 
         JOIN users u ON c.user_id = u.id 
         WHERE c.course_id = ?
@@ -468,7 +477,7 @@ async function startServer() {
     const groups = db.prepare("SELECT * FROM groups").all();
     const result = groups.map((g: any) => {
       const members = db.prepare(`
-        SELECT gm.user_id as userId, gm.role, gm.joined_at as joinedAt, gm.xp_contributed as xpContributed, u.username, u.avatar_seed as avatarSeed 
+        SELECT gm.user_id as userId, gm.role, gm.joined_at as joinedAt, gm.xp_contributed as xpContributed, u.username, u.avatar_seed as avatarSeed, u.avatar_url as avatarUrl
         FROM group_members gm 
         JOIN users u ON gm.user_id = u.id 
         WHERE gm.group_id = ?
