@@ -316,7 +316,12 @@ async function startServer() {
   app.get("/api/courses", (req, res) => {
     const courses = db.prepare("SELECT * FROM courses").all();
     const result = courses.map((c: any) => {
-      const instructor = db.prepare("SELECT id, username as name, avatar_seed as avatarSeed, avatar_url as avatarUrl, bio, qualifications FROM users WHERE id = ?").get(c.instructor_id);
+      const instructor = db.prepare("SELECT id, username as name, avatar_seed as avatarSeed, avatar_url as avatarUrl, bio, qualifications FROM users WHERE id = ?").get(c.instructor_id) || {
+        id: c.instructor_id || "unknown",
+        name: "Unknown Instructor",
+        avatarSeed: "unknown",
+        bio: ""
+      };
       const rawLessons = db.prepare("SELECT * FROM lessons WHERE course_id = ?").all(c.id);
       const lessons = rawLessons.map((l: any) => ({
         ...l,

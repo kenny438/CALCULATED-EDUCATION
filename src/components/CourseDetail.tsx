@@ -352,8 +352,8 @@ export function CourseDetail({ course, onBack, onEnroll, isWatchlisted, onToggle
                 className="relative cursor-pointer"
               >
                 <img 
-                  src={course.instructor.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + course.instructor.avatarSeed} 
-                  alt={course.instructor.name}
+                  src={course.instructor?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (course.instructor?.avatarSeed || "unknown")} 
+                  alt={course.instructor?.name || "Unknown Instructor"}
                   className="w-20 h-20 rounded-full bg-indigo-50 border border-indigo-100 shadow-md transform -rotate-6 transition-transform object-cover"
                 />
                 <div className="absolute -bottom-2 -right-2 bg-emerald-400 text-white text-xs font-bold px-2 py-1 rounded-lg border border-white shadow-sm transform rotate-12">
@@ -362,22 +362,22 @@ export function CourseDetail({ course, onBack, onEnroll, isWatchlisted, onToggle
               </motion.div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  {course.instructor.name}
-                  {["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(course.instructor.email || "") && (
+                  {course.instructor?.name || "Unknown Instructor"}
+                  {["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(course.instructor?.email || "") && (
                     <span className="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold border border-blue-200">
                       <BadgeCheck className="w-3 h-3 text-blue-500" />
                       Co-founder
                     </span>
                   )}
                 </h3>
-                <p className="text-slate-600 mt-2 font-medium leading-relaxed">{course.instructor.bio}</p>
-                {course.instructor.qualifications && (
+                <p className="text-slate-600 mt-2 font-medium leading-relaxed">{course.instructor?.bio || "No bio available."}</p>
+                {course.instructor?.qualifications && (
                   <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-full p-4">
                     <h4 className="text-sm font-bold text-indigo-900 mb-1 flex items-center gap-2">
                       <GraduationCap className="w-4 h-4" />
                       Qualifications
                     </h4>
-                    <p className="text-sm text-indigo-700">{course.instructor.qualifications}</p>
+                    <p className="text-sm text-indigo-700">{course.instructor?.qualifications}</p>
                   </div>
                 )}
               </div>

@@ -618,8 +618,8 @@ export default function App() {
   };
 
   const filteredCourses = courses.filter(course => {
-    const isInstructor = session?.user?.id === course.instructor.id;
-    const isPublished = course.status === 'published';
+    const isInstructor = session?.user?.id === course.instructor?.id;
+    const isPublished = course.status === 'published' || !course.status; // Treat undefined as published for backward compatibility
     if (!isPublished && !isInstructor) return false;
 
     const matchesSearch = (course.title || "").toLowerCase().includes((searchQuery || "").toLowerCase()) || 
@@ -723,7 +723,7 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
             >
               <HomeDashboard 
-                courses={courses.filter(c => c.status === 'published' || c.instructor.id === session?.user?.id)} 
+                courses={courses.filter(c => c.status === 'published' || !c.status || c.instructor?.id === session?.user?.id)} 
                 enrollments={enrollments}
                 userProfile={userProfile}
                 onSelectCourse={(id) => {

@@ -111,14 +111,14 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course, onClick, isWatch
             className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 overflow-hidden shadow-sm"
           >
             <img 
-              src={course.instructor.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + course.instructor.avatarSeed} 
-              alt={course.instructor.name}
+              src={course.instructor?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (course.instructor?.avatarSeed || "unknown")} 
+              alt={course.instructor?.name || "Unknown Instructor"}
               className="w-full h-full object-cover"
             />
           </motion.div>
           <span className="text-sm font-bold text-slate-700 group-hover/instructor:text-indigo-600 transition-colors flex items-center gap-1">
-            {course.instructor.name}
-            {["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(course.instructor.email || "") && (
+            {course.instructor?.name || "Unknown Instructor"}
+            {["mgethmikadinujakumarathunga@gmail.com", "thewantab2012@gmail.com", "therevisionplan@gmail.com"].includes(course.instructor?.email || "") && (
               <BadgeCheck className="w-4 h-4 text-blue-500" title="Co-founder" />
             )}
           </span>
