@@ -346,10 +346,10 @@ export function CourseDetail({ course, onBack, onEnroll, isWatchlisted, onToggle
               </motion.div>
               Your Instructor
             </h2>
-            <div className="flex items-start gap-6">
+            <div className="flex flex-col sm:flex-row items-start gap-6">
               <motion.div 
                 whileHover={{ scale: 1.1, rotate: 6 }}
-                className="relative cursor-pointer"
+                className="relative cursor-pointer shrink-0"
               >
                 <img 
                   src={course.instructor?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (course.instructor?.avatarSeed || "unknown")} 

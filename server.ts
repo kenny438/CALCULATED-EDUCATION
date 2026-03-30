@@ -138,6 +138,24 @@ try {
 }
 
 try {
+  db.exec(`ALTER TABLE courses ADD COLUMN image TEXT;`);
+} catch (e) {
+  // Column might already exist
+}
+
+try {
+  db.exec(`ALTER TABLE courses ADD COLUMN tags TEXT;`);
+} catch (e) {
+  // Column might already exist
+}
+
+try {
+  db.exec(`ALTER TABLE courses ADD COLUMN status TEXT DEFAULT 'draft';`);
+} catch (e) {
+  // Column might already exist
+}
+
+try {
   db.exec(`ALTER TABLE users ADD COLUMN qualifications TEXT;`);
 } catch (e) {
   // Column might already exist

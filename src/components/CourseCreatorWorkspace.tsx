@@ -173,15 +173,17 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
       className="fixed inset-0 z-50 bg-indigo-50 flex flex-col h-screen overflow-hidden"
     >
       {/* Topbar */}
-      <header className="h-20 bg-white border-b-4 border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4">
-          <button onClick={onClose} className="p-3 hover:bg-rose-100 rounded-2xl transition-colors text-slate-500 hover:text-rose-600">
-            <X className="w-6 h-6" />
-          </button>
-          <div className="h-8 w-1 bg-slate-200 rounded-full" />
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Course Creator</h1>
+      <header className="h-auto md:h-20 py-3 md:py-0 bg-white border-b-4 border-slate-200 flex flex-col md:flex-row items-center justify-between px-4 md:px-6 flex-shrink-0 z-10 shadow-sm gap-3 md:gap-0">
+        <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-start">
+          <div className="flex items-center gap-2 md:gap-4">
+            <button onClick={onClose} className="p-2 md:p-3 hover:bg-rose-100 rounded-2xl transition-colors text-slate-500 hover:text-rose-600">
+              <X className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+            <div className="hidden md:block h-8 w-1 bg-slate-200 rounded-full" />
+            <h1 className="text-lg md:text-2xl font-black text-slate-900 tracking-tight">Course Creator</h1>
+          </div>
           <span className={cn(
-            "px-3 py-1.5 text-xs font-black uppercase tracking-widest rounded-xl border-2",
+            "px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-xl border-2",
             courseData.status === 'published' 
               ? "bg-emerald-100 text-emerald-700 border-emerald-200" 
               : "bg-amber-100 text-amber-700 border-amber-200"
@@ -189,99 +191,100 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
             {courseData.status === 'published' ? 'Published' : 'Draft'}
           </span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-end">
           <button 
             onClick={() => setIsPreviewMode(true)}
-            className="btn-fun bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 px-6 py-3 flex items-center gap-2"
+            className="btn-fun bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 px-3 py-2 md:px-6 md:py-3 flex items-center gap-2 text-sm md:text-base flex-1 md:flex-none justify-center"
           >
-            <Eye className="w-5 h-5" />
+            <Eye className="w-4 h-4 md:w-5 md:h-5" />
             Preview
           </button>
           <button 
             onClick={() => handleSave('draft')}
-            className="btn-fun bg-white text-slate-700 border-slate-200 hover:bg-slate-50 px-6 py-3"
+            className="btn-fun bg-white text-slate-700 border-slate-200 hover:bg-slate-50 px-3 py-2 md:px-6 md:py-3 text-sm md:text-base flex-1 md:flex-none justify-center"
           >
-            {courseData.status === 'published' ? 'Unpublish to Draft' : 'Save Draft'}
+            {courseData.status === 'published' ? 'Unpublish' : 'Save Draft'}
           </button>
           <button 
             onClick={() => handleSave('published')}
-            className="btn-fun-indigo px-8 py-3 flex items-center gap-2"
+            className="btn-fun-indigo px-4 py-2 md:px-8 md:py-3 flex items-center gap-2 text-sm md:text-base flex-1 md:flex-none justify-center"
           >
-            <Save className="w-5 h-5" />
-            {courseData.status === 'published' ? 'Save Changes' : 'Publish Course'}
+            <Save className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">{courseData.status === 'published' ? 'Save Changes' : 'Publish Course'}</span>
+            <span className="sm:hidden">Publish</span>
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
         {/* Fun background elements */}
         <div className="absolute top-20 left-20 w-64 h-64 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none" />
         <div className="absolute top-40 right-20 w-64 h-64 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 pointer-events-none" />
 
         {/* Sidebar */}
-        <aside className="w-80 bg-white border-r-4 border-slate-200 flex flex-col overflow-y-auto z-10 shadow-sm">
-          <div className="p-6 space-y-2">
+        <aside className="w-full md:w-80 bg-white border-b-4 md:border-b-0 md:border-r-4 border-slate-200 flex flex-col overflow-y-auto z-10 shadow-sm flex-shrink-0 max-h-48 md:max-h-none">
+          <div className="p-4 md:p-6 flex flex-row md:flex-col gap-2 md:space-y-2 overflow-x-auto md:overflow-visible">
             <button
               onClick={() => setActiveMenu("overview")}
               className={cn(
-                "w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold transition-all border-2",
+                "flex-shrink-0 md:w-full flex items-center gap-2 md:gap-4 px-4 py-2 md:py-4 rounded-2xl text-sm md:text-base font-bold transition-all border-2",
                 activeMenu === "overview" 
                   ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm" 
                   : "text-slate-600 border-transparent hover:bg-slate-50 hover:border-slate-200"
               )}
             >
-              <BookOpen className="w-5 h-5" />
+              <BookOpen className="w-4 h-4 md:w-5 md:h-5" />
               Overview
             </button>
             <button
               onClick={() => setActiveMenu("map")}
               className={cn(
-                "w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold transition-all border-2",
+                "flex-shrink-0 md:w-full flex items-center gap-2 md:gap-4 px-4 py-2 md:py-4 rounded-2xl text-sm md:text-base font-bold transition-all border-2",
                 activeMenu === "map" 
                   ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm" 
                   : "text-slate-600 border-transparent hover:bg-slate-50 hover:border-slate-200"
               )}
             >
-              <Map className="w-5 h-5" />
-              Progression Map
+              <Map className="w-4 h-4 md:w-5 md:h-5" />
+              Map
             </button>
             <button
               onClick={() => setActiveMenu("settings")}
               className={cn(
-                "w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold transition-all border-2",
+                "flex-shrink-0 md:w-full flex items-center gap-2 md:gap-4 px-4 py-2 md:py-4 rounded-2xl text-sm md:text-base font-bold transition-all border-2",
                 activeMenu === "settings" 
                   ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm" 
                   : "text-slate-600 border-transparent hover:bg-slate-50 hover:border-slate-200"
               )}
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4 md:w-5 md:h-5" />
               Settings
             </button>
           </div>
 
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Curriculum</h3>
-              <button onClick={addLesson} className="p-2 bg-emerald-100 hover:bg-emerald-200 rounded-xl text-emerald-600 transition-colors">
-                <Plus className="w-5 h-5" />
+          <div className="px-4 md:px-6 py-2 md:py-4 border-t-2 border-slate-100 md:border-t-0">
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400">Curriculum</h3>
+              <button onClick={addLesson} className="p-1.5 md:p-2 bg-emerald-100 hover:bg-emerald-200 rounded-xl text-emerald-600 transition-colors">
+                <Plus className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
             
-            <div className="space-y-2">
+            <div className="flex flex-row md:flex-col gap-2 md:space-y-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
               {courseData.lessons?.map((lesson, index) => (
                 <button
                   key={lesson.id}
                   onClick={() => setActiveMenu(lesson.id)}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-4 rounded-2xl text-sm font-bold transition-all border-2 group",
+                    "flex-shrink-0 w-48 md:w-full flex items-center justify-between px-3 md:px-4 py-2 md:py-4 rounded-2xl text-xs md:text-sm font-bold transition-all border-2 group",
                     activeMenu === lesson.id 
                       ? "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm" 
                       : "text-slate-600 border-transparent hover:bg-slate-50 hover:border-slate-200"
                   )}
                 >
-                  <div className="flex items-center gap-3 truncate">
+                  <div className="flex items-center gap-2 md:gap-3 truncate">
                     <div className={cn(
-                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black",
+                      "w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center text-[10px] md:text-xs font-black shrink-0",
                       activeMenu === lesson.id ? "bg-indigo-200 text-indigo-800" : "bg-slate-200 text-slate-600"
                     )}>
                       {index + 1}
@@ -289,18 +292,18 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
                     <span className="truncate">{lesson.title}</span>
                   </div>
                   <ChevronRight className={cn(
-                    "w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity",
+                    "w-3 h-3 md:w-4 md:h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0",
                     activeMenu === lesson.id && "opacity-100"
                   )} />
                 </button>
               ))}
               {courseData.lessons?.length === 0 && (
-                <div className="text-center py-8 px-4 border-4 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                  <div className="w-12 h-12 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <BookOpen className="w-6 h-6" />
+                <div className="text-center py-4 md:py-8 px-4 border-4 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex-shrink-0 w-64 md:w-auto">
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                    <BookOpen className="w-4 h-4 md:w-6 md:h-6" />
                   </div>
-                  <p className="text-sm text-slate-500 font-bold mb-4">Your curriculum is empty. Start by adding your first lesson!</p>
-                  <button onClick={addLesson} className="btn-fun-indigo px-4 py-2 text-sm w-full">
+                  <p className="text-xs md:text-sm text-slate-500 font-bold mb-2 md:mb-4">Your curriculum is empty. Start by adding your first lesson!</p>
+                  <button onClick={addLesson} className="btn-fun-indigo px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm w-full">
                     Add First Lesson
                   </button>
                 </div>
@@ -347,7 +350,7 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           <div>
                             <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-widest">Category</label>
                             <select
@@ -759,17 +762,17 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-8"
                 >
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center flex-shrink-0">
                         <BookOpen className="w-6 h-6" />
                       </div>
                       <div>
-                        <h2 className="text-3xl font-black text-slate-900">Edit Lesson</h2>
-                        <p className="text-slate-500 font-bold">Configure content and interactive elements</p>
+                        <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Edit Lesson</h2>
+                        <p className="text-sm sm:text-base text-slate-500 font-bold">Configure content and interactive elements</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
                       <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                         <button 
                           onClick={() => {
@@ -837,7 +840,7 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           <div>
                             <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-widest">Duration</label>
                             <input
