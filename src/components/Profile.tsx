@@ -12,9 +12,10 @@ interface ProfileProps {
   createdCourses?: Course[];
   onEditCourse?: (course: Course) => void;
   enrollments?: Enrollment[];
+  courses?: Course[];
 }
 
-export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, createdCourses = [], onEditCourse, enrollments = [] }: ProfileProps) {
+export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, createdCourses = [], onEditCourse, enrollments = [], courses = [] }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(profile);
   const { addToast } = useToast();
@@ -52,11 +53,12 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
   };
 
   const completedCourses = enrollments.filter(e => e.progress === 100).length;
+  const certificatesEarned = enrollments.filter(e => e.progress === 100 && courses.find(c => c.id === e.courseId)?.certificate).length;
 
   const stats = [
     { label: "Courses Enrolled", value: enrollments.length.toString(), icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50" },
     { label: "Courses Completed", value: completedCourses.toString(), icon: Award, color: "text-emerald-500", bg: "bg-emerald-50" },
-    { label: "Certificates", value: completedCourses.toString(), icon: Trophy, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Certificates", value: certificatesEarned.toString(), icon: Trophy, color: "text-amber-500", bg: "bg-amber-50" },
     { label: "Current Streak", value: `${profile.dailyStreak || 0} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
   ];
 
@@ -300,30 +302,6 @@ export function Profile({ profile, onUpdateProfile, onSignOut, onCreateCourse, c
               )}
             </div>
           )}
-
-          <div className="card-fun bg-white p-8">
-            <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-amber-500" />
-              Recent Achievements
-            </h3>
-            <div className="space-y-4">
-              {[
-                { title: "Fast Learner", desc: "Completed 3 lessons in one day", icon: Zap, color: "text-amber-500", bg: "bg-amber-100", border: "border-amber-200" },
-                { title: "Perfect Score", desc: "Got 100% on the React Basics Quiz", icon: Star, color: "text-emerald-500", bg: "bg-emerald-100", border: "border-emerald-200" },
-                { title: "Consistency", desc: "Maintained a 7-day learning streak", icon: Flame, color: "text-orange-500", bg: "bg-orange-100", border: "border-orange-200" },
-              ].map((achievement, i) => (
-                <div key={i} className="flex items-center gap-5 p-5 rounded-2xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all hover:-translate-y-1 bg-slate-50/50">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-b border-r-4 ${achievement.bg} ${achievement.color} ${achievement.border}`}>
-                    <achievement.icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg text-slate-900">{achievement.title}</h4>
-                    <p className="text-sm font-bold text-slate-500">{achievement.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

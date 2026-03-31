@@ -716,17 +716,31 @@ export function CourseCreatorWorkspace({ onClose, onSave, onDelete, initialData,
 
                         <div className="flex flex-col justify-end">
                           <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-widest">Certification</label>
-                          <div className="flex items-center gap-4 p-4 bg-slate-50 border-4 border-slate-100 rounded-2xl h-[60px]">
-                            <input
-                              type="checkbox"
-                              id="certificate"
-                              checked={courseData.certificate || false}
-                              onChange={e => setCourseData({ ...courseData, certificate: e.target.checked })}
-                              className="w-6 h-6 text-indigo-600 rounded-xl border-slate-300 focus:ring-indigo-500"
-                            />
-                            <label htmlFor="certificate" className="text-lg font-bold text-slate-700 cursor-pointer select-none">
-                              Offer Certificate of Completion
-                            </label>
+                          <div className="flex flex-col gap-4 p-4 bg-slate-50 border-4 border-slate-100 rounded-2xl">
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="checkbox"
+                                id="certificate"
+                                checked={courseData.certificate || false}
+                                onChange={e => setCourseData({ ...courseData, certificate: e.target.checked })}
+                                className="w-6 h-6 text-indigo-600 rounded-xl border-slate-300 focus:ring-indigo-500"
+                              />
+                              <label htmlFor="certificate" className="text-lg font-bold text-slate-700 cursor-pointer select-none">
+                                Offer Certificate of Completion
+                              </label>
+                            </div>
+                            {courseData.certificate && (
+                              <div className="mt-2">
+                                <label className="block text-xs font-black text-slate-500 mb-1 uppercase tracking-widest">Certificate Name</label>
+                                <input
+                                  type="text"
+                                  value={courseData.certificateName || ""}
+                                  onChange={e => setCourseData({ ...courseData, certificateName: e.target.value })}
+                                  placeholder="e.g. React Master Developer"
+                                  className="w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all outline-none font-bold text-slate-700"
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

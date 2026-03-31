@@ -964,6 +964,7 @@ export default function App() {
                   setIsCourseCreatorOpen(true);
                 }}
                 enrollments={enrollments}
+                courses={courses}
               />
             </motion.div>
           )}

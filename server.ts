@@ -47,6 +47,8 @@ db.exec(`
     tags TEXT,
     status TEXT DEFAULT 'draft',
     ui_style TEXT DEFAULT 'standard',
+    certificate INTEGER DEFAULT 0,
+    certificate_name TEXT,
     FOREIGN KEY(instructor_id) REFERENCES users(id)
   );
 
@@ -358,6 +360,8 @@ async function startServer() {
       return {
         ...c,
         uiStyle: c.ui_style,
+        certificate: c.certificate === 1,
+        certificateName: c.certificate_name,
         instructor,
         lessons,
         comments,
@@ -368,12 +372,12 @@ async function startServer() {
   });
 
   app.post("/api/courses", (req, res) => {
-    const { id, title, description, category, instructor, price, level, image, tags, status, uiStyle, lessons } = req.body;
+    const { id, title, description, category, instructor, price, level, image, tags, status, uiStyle, certificate, certificateName, lessons } = req.body;
     
     try {
       db.prepare(`
-        INSERT INTO courses (id, title, description, category, instructor_id, price, level, image, tags, status, ui_style)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO courses (id, title, description, category, instructor_id, price, level, image, tags, status, ui_style, certificate, certificate_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           title = excluded.title,
           description = excluded.description,
@@ -383,7 +387,9 @@ async function startServer() {
           image = excluded.image,
           tags = excluded.tags,
           status = excluded.status,
-          ui_style = excluded.ui_style
+          ui_style = excluded.ui_style,
+          certificate = excluded.certificate,
+          certificate_name = excluded.certificate_name
       `).run(
         id, 
         title || null, 
@@ -395,7 +401,9 @@ async function startServer() {
         image || null, 
         JSON.stringify(tags || []), 
         status || 'published', 
-        uiStyle || 'standard'
+        uiStyle || 'standard',
+        certificate ? 1 : 0,
+        certificateName || null
       );
 
       if (lessons && lessons.length > 0) {

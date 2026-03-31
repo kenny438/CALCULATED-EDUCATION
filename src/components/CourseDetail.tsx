@@ -484,13 +484,22 @@ export function CourseDetail({ course, onBack, onEnroll, isWatchlisted, onToggle
                   <CheckCircle className="w-5 h-5 text-emerald-500 group-hover/benefit:scale-125 transition-transform" />
                   <span className="group-hover/benefit:text-emerald-700 transition-colors">Interactive learning path</span>
                 </motion.div>
-                <motion.div 
-                  whileHover={{ scale: 1.02, x: 5 }}
-                  className="flex items-center gap-3 bg-slate-50 p-3 rounded-full border border-slate-100 group/benefit cursor-default"
-                >
-                  <CheckCircle className="w-5 h-5 text-emerald-500 group-hover/benefit:scale-125 transition-transform" />
-                  <span className="group-hover/benefit:text-emerald-700 transition-colors">Certificate of completion</span>
-                </motion.div>
+                {course.certificate && (
+                  <motion.div 
+                    whileHover={{ scale: 1.02, x: 5 }}
+                    className="flex flex-col gap-1 bg-slate-50 p-3 rounded-2xl border border-slate-100 group/benefit cursor-default"
+                  >
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 group-hover/benefit:scale-125 transition-transform" />
+                      <span className="group-hover/benefit:text-emerald-700 transition-colors">Certificate of completion</span>
+                    </div>
+                    {course.certificateName && (
+                      <div className="pl-8 text-xs text-slate-500 font-medium">
+                        Earn the <span className="font-bold text-indigo-600">{course.certificateName}</span> certificate
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>

@@ -61,6 +61,7 @@ export interface Course {
   uiStyle?: 'standard' | 'progression-map';
   visibility?: 'public' | 'unlisted' | 'private';
   certificate?: boolean;
+  certificateName?: string;
   language?: string;
   estimatedTime?: string;
 }
